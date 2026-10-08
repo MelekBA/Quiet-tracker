@@ -13,7 +13,7 @@ csrf = CSRFProtect()
 
 def create_app():
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-not-secret")
+    app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
     app.config["DATABASE_URL"] = os.environ["DATABASE_URL"]
 
     from . import db
