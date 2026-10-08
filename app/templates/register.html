@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create account · Quiet Tracker</title>
+    <script>
+        if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="app app--centered">
+    <main class="main main--centered">
+        <section class="card auth-card">
+            <h1>Quiet Tracker</h1>
+            <p class="auth-subtitle">Create your account</p>
+
+            {% if error %}
+            <p class="auth-error">{{ error }}</p>
+            {% endif %}
+
+            <form method="post" class="auth-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label>
+                    <span>Username</span>
+                    <input type="text" name="username" required autocomplete="username"
+                           minlength="3" autofocus>
+                </label>
+                <label>
+                    <span>Password</span>
+                    <input type="password" name="password" required autocomplete="new-password"
+                           minlength="6">
+                </label>
+                <button type="submit">Create account</button>
+            </form>
+
+            <p class="auth-switch">
+                Already have one? <a href="{{ url_for('main.login') }}">Log in</a>
+            </p>
+        </section>
+    </main>
+</div>
+<button id="theme-toggle" class="theme-toggle theme-toggle--floating" aria-label="toggle theme">◐</button>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

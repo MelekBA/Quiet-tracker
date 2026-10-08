@@ -1,0 +1,4 @@
+[tool.ruff.lint]
+ignore = [
+    "DTZ011",  # date.today() is fine for a single-user local app
+]

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+data/tracker.json
+.vscode/
+app/data/*.db
+app/data/*.db-journal
+app/data/*.bak
+.env

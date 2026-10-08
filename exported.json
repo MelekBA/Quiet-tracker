@@ -1,0 +1,48 @@
+{
+  "habits": [
+    {
+      "id": "0adc420d",
+      "name": "melek",
+      "color": "#7c9a92",
+      "created": "2026-09-18"
+    },
+    {
+      "id": "1e81d51b",
+      "name": "sprint",
+      "color": "#4dd902",
+      "created": "2026-09-18"
+    },
+    {
+      "id": "83c7ce55",
+      "name": "boxing",
+      "color": "#e6410a",
+      "created": "2026-09-18"
+    }
+  ],
+  "logs": {
+    "2026-09-12": {
+      "0adc420d": false
+    },
+    "2026-09-13": {
+      "0adc420d": true
+    },
+    "2026-09-14": {
+      "0adc420d": true
+    },
+    "2026-09-15": {
+      "0adc420d": true
+    },
+    "2026-09-16": {
+      "0adc420d": true
+    },
+    "2026-09-17": {
+      "0adc420d": true
+    },
+    "2026-09-18": {
+      "0adc420d": true,
+      "1e81d51b": true,
+      "83c7ce55": true
+    }
+  },
+  "notes": {}
+}

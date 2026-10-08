@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare · Quiet Tracker</title>
+    <script>
+        if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <h1>Quiet Tracker</h1>
+            <p class="subtitle">Compare</p>
+        </div>
+
+        <nav class="nav">
+            <a href="{{ url_for('main.home') }}" class="nav-link">Overview</a>
+            <a href="{{ url_for('main.compare') }}" class="nav-link active">Compare</a>
+            <a href="{{ url_for('main.export') }}" class="nav-link">Export</a>
+        </nav>
+
+        <button id="theme-toggle" class="theme-toggle nav-theme" aria-label="toggle theme">◐</button>
+    </aside>
+
+    <main class="main">
+        <div class="dashboard">
+
+            <section class="card card--full compare-head">
+                <div class="compare-head-row">
+                    <div>
+                        <h2>Current period</h2>
+                        <p class="compare-range">{{ data.current_range }}</p>
+                    </div>
+                    <div class="tabs tabs--inline">
+                        {% for p in ["week", "month", "year"] %}
+                        <a href="{{ url_for('main.compare', period=p) }}"
+                           class="tab {% if data.period == p %}active{% endif %}">
+                            This {{ p }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <p class="compare-vs">vs. previous · {{ data.previous_range }}</p>
+            </section>
+
+            <section class="card card--full">
+                {% if data.rows %}
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th>Habit</th>
+                            <th>Now</th>
+                            <th>Before</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data.rows %}
+                        <tr>
+                            <td>
+                                <span class="habit-dot" style="background: {{ row.color }}"></span>
+                                {{ row.name }}
+                            </td>
+                            <td>{{ row.current }} / {{ row.days }}</td>
+                            <td>{{ row.previous }} / {{ row.days }}</td>
+                            <td class="{% if row.delta > 0 %}delta-up{% elif row.delta < 0 %}delta-down{% endif %}">
+                                {% if row.delta > 0 %}+{% endif %}{{ row.delta }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="empty">No habits yet.</p>
+                {% endif %}
+            </section>
+
+        </div>
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiet Tracker</title>
+    <script>
+        if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <h1>Quiet Tracker</h1>
+            <p class="subtitle">{{ today }}</p>
+        </div>
+
+        <nav class="nav">
+            <a href="{{ url_for('main.home') }}" class="nav-link active">Overview</a>
+            <a href="{{ url_for('main.compare') }}" class="nav-link">Compare</a>
+            <a href="{{ url_for('main.export') }}" class="nav-link">Export</a>
+        </nav>
+
+        <details class="sidebar-add-wrap">
+            <summary>+ Add habit</summary>
+            <form method="post" action="{{ url_for('main.add') }}" class="sidebar-add">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="text" name="name" placeholder="Habit name" required autocomplete="off">
+                <div class="sidebar-add-row">
+                    <input type="color" name="color" value="#7c9a92" aria-label="habit color">
+                    <button type="submit">Add</button>
+                </div>
+            </form>
+        </details>
+
+        <button id="theme-toggle" class="theme-toggle nav-theme" aria-label="toggle theme">◐</button>
+
+        <div class="sidebar-user">
+            <span class="sidebar-username">{{ current_user.username }}</span>
+            <form method="post" action="{{ url_for('main.logout') }}" class="logout-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="logout-btn">Log out</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="dashboard">
+
+            {% if habits %}
+            <section class="stat-row">
+                <div class="stat">
+                    <div class="donut">
+                        <svg viewBox="0 0 36 36" aria-hidden="true">
+                            <circle cx="18" cy="18" r="15.9155" fill="none"
+                                    stroke="var(--border)" stroke-width="2.5" />
+                            <circle class="donut-fill" cx="18" cy="18" r="15.9155" fill="none"
+                                    stroke="var(--accent)" stroke-width="2.5"
+                                    stroke-linecap="round"
+                                    transform="rotate(-90 18 18)"
+                                    data-pct="{{ today_pct }}" />
+                        </svg>
+                        <span class="donut-pct">{{ today_pct }}%</span>
+                    </div>
+                    <div class="stat-label">Today</div>
+                    <div class="stat-sub">{{ today_done }} of {{ today_total }}</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-big">{{ longest_streak }}</div>
+                    <div class="stat-label">Longest streak</div>
+                    <div class="stat-sub">day{% if longest_streak != 1 %}s{% endif %} in a row</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-big">{{ habits|length }}</div>
+                    <div class="stat-label">Habits</div>
+                    <div class="stat-sub">being tracked</div>
+                </div>
+            </section>
+
+            <section class="card card--tall">
+                <h2>Today's habits</h2>
+                {% for habit in habits %}
+                <div class="habit-row">
+                    <span class="habit-dot" style="background: {{ habit.color }}"></span>
+                    <span class="habit-name">{{ habit.name }}</span>
+                    <span class="streak {% if habit.streak >= 7 %}streak--fire{% endif %} {% if habit.milestone %}streak--milestone{% endif %}">
+                        {% if habit.streak > 0 %}
+                            {{ habit.streak }}d
+                            {% if habit.best > habit.streak %}
+                                <span class="pb">· best {{ habit.best }}</span>
+                            {% endif %}
+                        {% else %}&nbsp;{% endif %}
+                    </span>
+                    <form method="post"
+                          action="{{ url_for('main.toggle', date_str=today, habit_id=habit.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit"
+                                class="check {% if habit.done_today %}done{% endif %}"
+                                aria-label="toggle">
+                            {% if habit.done_today %}✓{% endif %}
+                        </button>
+                    </form>
+                    <form method="post"
+                          action="{{ url_for('main.delete', habit_id=habit.id) }}"
+                          onsubmit="return confirm('Delete this habit? This cannot be undone.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="delete-btn" aria-label="delete">×</button>
+                    </form>
+                </div>
+                <details class="note-block" {% if habit.note %}open{% endif %}>
+                    <summary>Note</summary>
+                    <form method="post"
+                          action="{{ url_for('main.note', date_str=today, habit_id=habit.id) }}"
+                          class="note-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <textarea name="note" rows="2"
+                                  placeholder="Anything worth remembering about today?">{{ habit.note }}</textarea>
+                        <button type="submit">Save</button>
+                    </form>
+                </details>
+                {% endfor %}
+            </section>
+
+            <section class="card">
+                <h2>Completion · 30d</h2>
+                <div class="chart-wrap">
+                    <canvas id="completionChart"></canvas>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Daily totals · 30d</h2>
+                <div class="chart-wrap">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </section>
+
+            <section class="card card--full">
+                <h2>This week</h2>
+                <div class="day-grid">
+                    {% for day in days %}
+                    <div class="day-card {% if day.is_today %}is-today{% endif %}"
+                         style="--day-color: var(--day-{{ day.weekday }});">
+                        <div class="day-card-head">
+                            <span class="day-card-label">{{ day.label }}</span>
+                            <span class="day-card-num">{{ day.day_num }}</span>
+                        </div>
+                        <div class="day-card-dots">
+                            {% for habit in habits %}
+                            <form method="post"
+                                  action="{{ url_for('main.toggle', date_str=day.iso, habit_id=habit.id) }}"
+                                  class="day-card-dot-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit"
+                                        class="day-card-dot {% if habit.days[day.iso] %}done{% endif %}"
+                                        style="--dot-color: {{ habit.color }}"
+                                        title="{{ habit.name }} — {{ day.iso }}"
+                                        aria-label="toggle {{ habit.name }} on {{ day.iso }}"></button>
+                            </form>
+                            {% endfor %}
+                        </div>
+                        <div class="day-card-footer">
+                            <strong>{{ day.count }}</strong> / {{ day.total }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <details class="card card--full collapsible">
+                <summary>
+                    <h2>History · 12 weeks</h2>
+                    <span class="collapsible-hint">click to expand</span>
+                </summary>
+                <div class="collapsible-body">
+                    {% for habit in habits %}
+                    <div class="heatmap-row">
+                        <div class="heatmap-name" style="border-bottom-color: {{ habit.color }}66;">
+                            <span class="habit-dot" style="background: {{ habit.color }}"></span>
+                            <span>{{ habit.name }}</span>
+                        </div>
+                        {% if habit.has_data %}
+                        <div class="heatmap" style="--heat-color: {{ habit.color }};">
+                            {% for cell in habit.heatmap %}
+                            <span class="heat-cell {% if cell.done %}done{% endif %} {% if cell.future %}future{% endif %} {% if cell.is_today %}is-today{% endif %}"
+                                  title="{{ cell.iso }}"></span>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="heatmap-empty">No check-ins yet — toggle a day above to start.</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endif %}
+
+        </div>
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/stats.js') }}"></script>
+<script src="{{ url_for('static', filename='js/stats-daily.js') }}"></script>
+<script>
+    requestAnimationFrame(() => {
+        document.querySelectorAll(".donut-fill").forEach(c => {
+            c.style.strokeDasharray = `${c.dataset.pct} 100`;
+        });
+    });
+</script>
+</body>
+</html>
