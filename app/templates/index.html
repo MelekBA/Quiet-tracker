@@ -86,46 +86,48 @@
 
             <section class="card card--tall">
                 <h2>Today's habits</h2>
-                {% for habit in habits %}
-                <div class="habit-row">
-                    <span class="habit-dot" style="background: {{ habit.color }}"></span>
-                    <span class="habit-name">{{ habit.name }}</span>
-                    <span class="streak {% if habit.streak >= 7 %}streak--fire{% endif %} {% if habit.milestone %}streak--milestone{% endif %}">
-                        {% if habit.streak > 0 %}
-                            {{ habit.streak }}d
-                            {% if habit.best > habit.streak %}
-                                <span class="pb">· best {{ habit.best }}</span>
-                            {% endif %}
-                        {% else %}&nbsp;{% endif %}
-                    </span>
-                    <form method="post"
-                          action="{{ url_for('main.toggle', date_str=today, habit_id=habit.id) }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit"
-                                class="check {% if habit.done_today %}done{% endif %}"
-                                aria-label="toggle">
-                            {% if habit.done_today %}✓{% endif %}
-                        </button>
-                    </form>
-                    <form method="post"
-                          action="{{ url_for('main.delete', habit_id=habit.id) }}"
-                          onsubmit="return confirm('Delete this habit? This cannot be undone.');">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="delete-btn" aria-label="delete">×</button>
-                    </form>
-                </div>
-                <details class="note-block" {% if habit.note %}open{% endif %}>
-                    <summary>Note</summary>
-                    <form method="post"
-                          action="{{ url_for('main.note', date_str=today, habit_id=habit.id) }}"
-                          class="note-form">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <textarea name="note" rows="2"
-                                  placeholder="Anything worth remembering about today?">{{ habit.note }}</textarea>
-                        <button type="submit">Save</button>
-                    </form>
-                </details>
-                {% endfor %}
+              {% for habit in habits %}
+<div class="habit-item">
+    <div class="habit-row">
+        <span class="habit-dot" style="background: {{ habit.color }}"></span>
+        <span class="habit-name">{{ habit.name }}</span>
+        <span class="streak {% if habit.streak >= 7 %}streak--fire{% endif %} {% if habit.milestone %}streak--milestone{% endif %}">
+            {% if habit.streak > 0 %}
+                {{ habit.streak }}d
+                {% if habit.best > habit.streak %}
+                    <span class="pb">· best {{ habit.best }}</span>
+                {% endif %}
+            {% else %}&nbsp;{% endif %}
+        </span>
+        <form method="post"
+              action="{{ url_for('main.toggle', date_str=today, habit_id=habit.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit"
+                    class="check {% if habit.done_today %}done{% endif %}"
+                    aria-label="toggle">
+                {% if habit.done_today %}✓{% endif %}
+            </button>
+        </form>
+        <form method="post"
+              action="{{ url_for('main.delete', habit_id=habit.id) }}"
+              onsubmit="return confirm('Delete this habit? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="delete-btn" aria-label="delete">×</button>
+        </form>
+    </div>
+    <details class="note-block" {% if habit.note %}open{% endif %}>
+        <summary>Note</summary>
+        <form method="post"
+              action="{{ url_for('main.note', date_str=today, habit_id=habit.id) }}"
+              class="note-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <textarea name="note" rows="2"
+                      placeholder="Anything worth remembering about today?">{{ habit.note }}</textarea>
+            <button type="submit">Save</button>
+        </form>
+    </details>
+</div>
+{% endfor %}
             </section>
 
             <section class="card">
