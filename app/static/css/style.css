@@ -1167,22 +1167,18 @@ h2 {
     right: 1rem;
 }
 
-/* ============================================================
-   Mobile layout — activates only ≤ 720px.
-   Desktop is untouched.
-   ============================================================ */
 @media (max-width: 720px) {
 
-  /* --- Shell: sidebar stacks on top, main fills below --- */
+  /* --- Shell --- */
   .app {
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
     min-height: 100vh;
   }
 
   .sidebar {
-    width: 100%;
-    position: static;
+    width: 100% !important;
+    position: static !important;
     padding: 0.9rem 0.9rem 0.6rem;
     border-right: none;
     border-bottom: 1px solid var(--border);
@@ -1191,10 +1187,10 @@ h2 {
   .brand h1 { font-size: 1.1rem; margin: 0; }
   .brand .subtitle { font-size: 0.75rem; margin: 0.1rem 0 0; }
 
-  /* Nav becomes a horizontal scrolling row */
+  /* Nav as horizontal scroller */
   .nav {
-    display: flex;
-    flex-direction: row;
+    display: flex !important;
+    flex-direction: row !important;
     gap: 0.4rem;
     overflow-x: auto;
     padding: 0.4rem 0;
@@ -1209,70 +1205,80 @@ h2 {
     font-size: 0.9rem;
   }
 
-  /* User block sits inline */
+  /* Theme toggle: stop stretching */
+  .theme-toggle.nav-theme,
+  #theme-toggle {
+    width: auto !important;
+    max-width: 44px;
+    height: 44px;
+    align-self: flex-end;
+    padding: 0;
+    border-radius: 8px;
+    margin-top: 0.4rem;
+  }
+
+  /* Sidebar user row */
   .sidebar-user {
-    display: flex;
-    flex-direction: row;
+    display: flex !important;
+    flex-direction: row !important;
     align-items: center;
     justify-content: space-between;
     padding-top: 0.5rem;
     margin-top: 0.5rem;
+    gap: 0.5rem;
   }
+  .sidebar-username { flex: 1 1 auto; }
   .logout-form { width: auto; }
   .logout-btn { width: auto; padding: 0.3rem 0.7rem; font-size: 0.8rem; }
 
   /* --- Main --- */
-  .main { width: 100%; padding: 0.75rem; }
+  .main { width: 100% !important; padding: 0.75rem; }
 
   .dashboard {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
     gap: 0.75rem;
   }
 
-  /* Kill wide-span cards on mobile */
   .card--tall,
   .card--full {
-    grid-column: auto;
-    grid-row: auto;
+    grid-column: auto !important;
+    grid-row: auto !important;
   }
 
-  /* --- Stats: 3 compact stats in a row --- */
+  /* --- Stats: force 3 equal columns, override any flex/wrap --- */
   .stat-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
     gap: 0.4rem;
+    align-items: stretch;
   }
-  .stat { padding: 0.6rem 0.4rem; text-align: center; }
-  .donut { width: 56px; height: 56px; margin: 0 auto 0.3rem; }
-  .donut-pct { font-size: 0.7rem; }
-  .stat-big { font-size: 1.5rem; }
-  .stat-label { font-size: 0.7rem; }
-  .stat-sub { font-size: 0.65rem; }
-
-  /* --- Day cards: horizontal scroll strip --- */
-  .day-grid {
+  .stat {
     display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 0.3rem;
+    text-align: center;
   }
-  .day-card {
-    flex: 0 0 90px;
-    scroll-snap-align: start;
-    padding: 0.5rem;
+  .donut { width: 48px !important; height: 48px !important; margin: 0 auto 0.3rem; }
+  .donut-pct { font-size: 0.65rem; }
+  .stat-big { font-size: 1.4rem; line-height: 1; }
+  .stat-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.75;
   }
-  .day-card-dots { gap: 4px; }
-  .day-card-dot { width: 14px; height: 14px; }
+  .stat-sub { font-size: 0.6rem; opacity: 0.6; }
 
-  /* --- Habit rows: bigger tap targets --- */
+  /* --- Habit rows: compact, bigger tap targets --- */
   .habit-row {
-    flex-wrap: wrap;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
     gap: 0.5rem;
-    padding: 0.6rem 0;
+    padding: 0.5rem 0;
   }
   .habit-name {
     flex: 1 1 auto;
@@ -1281,12 +1287,41 @@ h2 {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .check { width: 40px; height: 40px; }
-  .delete-btn { width: 32px; height: 32px; }
+  .check { width: 38px !important; height: 38px !important; flex: 0 0 auto; }
+  .delete-btn { width: 30px !important; height: 30px !important; flex: 0 0 auto; }
 
-  /* --- Heatmap: scroll sideways --- */
+  /* Collapse the note block into a thin row */
+  .note-block {
+    margin-top: 0;
+    padding: 0 0 0.4rem;
+  }
+  .note-block > summary {
+    font-size: 0.7rem;
+    padding: 0.15rem 0;
+    opacity: 0.55;
+  }
+
+  /* --- Day cards: horizontal scroll strip --- */
+  .day-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  .day-card {
+    flex: 0 0 88px;
+    scroll-snap-align: start;
+    padding: 0.5rem;
+  }
+  .day-card-dots { gap: 4px; }
+  .day-card-dot { width: 14px !important; height: 14px !important; }
+
+  /* --- Heatmap scrolls sideways --- */
   .heatmap-row {
-    flex-direction: column;
+    flex-direction: column !important;
     align-items: stretch;
   }
   .heatmap-name {
@@ -1298,9 +1333,9 @@ h2 {
     padding-bottom: 0.4rem;
     -webkit-overflow-scrolling: touch;
   }
-  .heat-cell { width: 10px; height: 10px; }
+  .heat-cell { width: 10px !important; height: 10px !important; }
 
-  /* --- Compare page --- */
+  /* --- Compare --- */
   .compare-table-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -1312,20 +1347,20 @@ h2 {
     white-space: nowrap;
   }
   .compare-head-row {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: column !important;
+    align-items: flex-start !important;
     gap: 0.5rem;
   }
-  .tabs--inline { align-self: stretch; }
 
-  /* --- Typography & spacing --- */
+  /* --- Typography --- */
   h1 { font-size: 1.2rem; }
   h2 { font-size: 1rem; margin: 0.4rem 0; }
   .card { padding: 0.8rem; }
   .chart-wrap { height: 180px; }
 }
 
-/* Even narrower phones: 2-column stats */
 @media (max-width: 380px) {
-  .stat-row { grid-template-columns: repeat(2, 1fr); }
+  .stat-row { grid-template-columns: repeat(3, 1fr) !important; }
+  .stat-big { font-size: 1.2rem; }
+  .donut { width: 40px !important; height: 40px !important; }
 }
