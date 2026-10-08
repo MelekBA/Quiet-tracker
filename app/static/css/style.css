@@ -1176,16 +1176,32 @@ h2 {
     min-height: 100vh;
   }
 
+  /* Sidebar becomes a grid: brand + user share row 1 */
   .sidebar {
+    display: grid !important;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand  user"
+      "nav    nav"
+      "add    add"
+      "theme  theme";
+    gap: 0.5rem;
+    align-items: center;
     width: 100% !important;
     position: static !important;
-    padding: 0.9rem 0.9rem 0.6rem;
+    padding: 0.75rem 0.9rem 0.6rem;
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
 
-  .brand h1 { font-size: 1.1rem; margin: 0; }
-  .brand .subtitle { font-size: 0.75rem; margin: 0.1rem 0 0; }
+  .brand { grid-area: brand; }
+  .nav   { grid-area: nav; }
+  .sidebar-add-wrap { grid-area: add; }
+  #theme-toggle, .theme-toggle.nav-theme { grid-area: theme; }
+  .sidebar-user { grid-area: user; }
+
+  .brand h1 { font-size: 1.05rem; margin: 0; line-height: 1.1; }
+  .brand .subtitle { font-size: 0.7rem; margin: 0.1rem 0 0; opacity: 0.7; }
 
   /* Nav as horizontal scroller */
   .nav {
@@ -1194,7 +1210,7 @@ h2 {
     gap: 0.4rem;
     overflow-x: auto;
     padding: 0.4rem 0;
-    margin: 0.2rem 0 0;
+    margin: 0;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
@@ -1205,162 +1221,51 @@ h2 {
     font-size: 0.9rem;
   }
 
-  /* Theme toggle: stop stretching */
-  .theme-toggle.nav-theme,
-  #theme-toggle {
+  /* Theme toggle: compact, inline, right-aligned */
+  #theme-toggle,
+  .theme-toggle.nav-theme {
     width: auto !important;
-    max-width: 44px;
-    height: 44px;
-    align-self: flex-end;
-    padding: 0;
+    max-width: none;
+    height: auto;
+    align-self: end;
+    justify-self: end;
+    padding: 0.35rem 0.7rem;
     border-radius: 8px;
-    margin-top: 0.4rem;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1;
   }
 
-  /* Sidebar user row */
+  /* User block: top-right, inline with brand */
   .sidebar-user {
     display: flex !important;
     flex-direction: row !important;
     align-items: center;
-    justify-content: space-between;
-    padding-top: 0.5rem;
-    margin-top: 0.5rem;
+    justify-content: flex-end;
     gap: 0.5rem;
-  }
-  .sidebar-username { flex: 1 1 auto; }
-  .logout-form { width: auto; }
-  .logout-btn { width: auto; padding: 0.3rem 0.7rem; font-size: 0.8rem; }
-
-  /* --- Main --- */
-  .main { width: 100% !important; padding: 0.75rem; }
-
-  .dashboard {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 0.75rem;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    width: auto !important;
+    justify-self: end;
   }
 
-  .card--tall,
-  .card--full {
-    grid-column: auto !important;
-    grid-row: auto !important;
-  }
-
-  /* --- Stats: force 3 equal columns, override any flex/wrap --- */
-  .stat-row {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 0.4rem;
-    align-items: stretch;
-  }
-  .stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 0.6rem 0.3rem;
-    text-align: center;
-  }
-  .donut { width: 48px !important; height: 48px !important; margin: 0 auto 0.3rem; }
-  .donut-pct { font-size: 0.65rem; }
-  .stat-big { font-size: 1.4rem; line-height: 1; }
-  .stat-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    opacity: 0.75;
-  }
-  .stat-sub { font-size: 0.6rem; opacity: 0.6; }
-
-  /* --- Habit rows: compact, bigger tap targets --- */
-  .habit-row {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
-  }
-  .habit-name {
-    flex: 1 1 auto;
-    min-width: 0;
+  .sidebar-username {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    max-width: 6rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .check { width: 38px !important; height: 38px !important; flex: 0 0 auto; }
-  .delete-btn { width: 30px !important; height: 30px !important; flex: 0 0 auto; }
 
-  /* Collapse the note block into a thin row */
-  .note-block {
-    margin-top: 0;
-    padding: 0 0 0.4rem;
-  }
-  .note-block > summary {
-    font-size: 0.7rem;
-    padding: 0.15rem 0;
-    opacity: 0.55;
+  .logout-form {
+    width: auto !important;
+    margin: 0;
   }
 
-  /* --- Day cards: horizontal scroll strip --- */
-  .day-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    overflow-x: auto;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
+  .logout-btn {
+    width: auto !important;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
   }
-  .day-card {
-    flex: 0 0 88px;
-    scroll-snap-align: start;
-    padding: 0.5rem;
-  }
-  .day-card-dots { gap: 4px; }
-  .day-card-dot { width: 14px !important; height: 14px !important; }
-
-  /* --- Heatmap scrolls sideways --- */
-  .heatmap-row {
-    flex-direction: column !important;
-    align-items: stretch;
-  }
-  .heatmap-name {
-    font-size: 0.85rem;
-    margin-bottom: 0.4rem;
-  }
-  .heatmap {
-    overflow-x: auto;
-    padding-bottom: 0.4rem;
-    -webkit-overflow-scrolling: touch;
-  }
-  .heat-cell { width: 10px !important; height: 10px !important; }
-
-  /* --- Compare --- */
-  .compare-table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .compare-table th,
-  .compare-table td {
-    padding: 0.4rem 0.5rem;
-    font-size: 0.85rem;
-    white-space: nowrap;
-  }
-  .compare-head-row {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0.5rem;
-  }
-
-  /* --- Typography --- */
-  h1 { font-size: 1.2rem; }
-  h2 { font-size: 1rem; margin: 0.4rem 0; }
-  .card { padding: 0.8rem; }
-  .chart-wrap { height: 180px; }
-}
-
-@media (max-width: 380px) {
-  .stat-row { grid-template-columns: repeat(3, 1fr) !important; }
-  .stat-big { font-size: 1.2rem; }
-  .donut { width: 40px !important; height: 40px !important; }
-}
