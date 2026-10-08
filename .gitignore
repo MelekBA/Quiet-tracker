@@ -7,3 +7,5 @@ app/data/*.db
 app/data/*.db-journal
 app/data/*.bak
 .env
+
+exported.json
