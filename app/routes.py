@@ -5,11 +5,13 @@ from datetime import date, timedelta
 from flask import (
     Blueprint,
     abort,
+    current_app,
     jsonify,
     redirect,
     render_template,
     request,
     send_file,
+    send_from_directory,
     url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
@@ -249,3 +251,10 @@ def compare_data():
     if period not in ("week", "month", "year"):
         period = "week"
     return jsonify(models.get_comparison(current_user.id, period))  
+
+@main.route("/sw.js")
+def service_worker():
+    response = send_from_directory(current_app.static_folder, "sw.js")
+    response.headers["Service-Worker-Allowed"] = "/"
+    response.headers["Cache-Control"] = "no-cache"
+    return response
