@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'quiet-tracker-v1';
+const CACHE_VERSION = 'quiet-tracker-v2';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 
@@ -61,23 +61,20 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // HTML pages: stale-while-revalidate
+   // HTML pages: network-first, cache only as offline fallback
   const acceptsHtml = (request.headers.get('accept') || '').includes('text/html');
   if (request.mode === 'navigate' || acceptsHtml) {
     event.respondWith(
-      caches.open(PAGES_CACHE).then(cache =>
-        cache.match(request).then(cached => {
-          const networkFetch = fetch(request)
-            .then(resp => {
-              if (resp.status === 200) {
-                cache.put(request, resp.clone());
-              }
-              return resp;
-            })
-            .catch(() => cached);
-          return cached || networkFetch;
+      fetch(request)
+        .then(resp => {
+          if (resp.status === 200) {
+            const clone = resp.clone();
+            caches.open(PAGES_CACHE).then(c => c.put(request, clone));
+          }
+          return resp;
         })
-      )
+        .catch(() => caches.match(request))
     );
+    return;
   }
 });
