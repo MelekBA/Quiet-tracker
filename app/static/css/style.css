@@ -1555,3 +1555,20 @@ h2 {
     max-width: 100% !important;
   }
 }
+@media (max-width: 720px) {
+  .card--tall .habit-item .habit-row .habit-name,
+  .card--tall .habit-item .habit-row .habit-name * {
+    display: inline-block !important;
+    flex: 1 1 auto !important;
+    min-width: 60px !important;
+    width: auto !important;
+    max-width: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+    color: inherit !important;
+    font-size: 0.82rem !important;
+  }
+}
