@@ -1571,4 +1571,34 @@ h2 {
     color: inherit !important;
     font-size: 0.82rem !important;
   }
+}@media (max-width: 720px) {
+  /* Two-column habit list, minimal per-row content */
+  .card--tall .habit-item .habit-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 0.3rem !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .card--tall .habit-item .habit-row .habit-name {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: inherit !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Hide streak and delete on mobile — not enough room */
+  .card--tall .habit-item .habit-row .streak,
+  .card--tall .habit-item .habit-row .delete-btn {
+    display: none !important;
+  }
 }
