@@ -302,7 +302,7 @@ h2 {
     flex: 1;
     font-size: 0.96rem;
     font-weight: 500;
-    min-width: 0;
+    min-width: 3.5rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1547,8 +1547,6 @@ h2 {
   .card--tall,
   .stat-row,
   .stat,
-  .habit-item,
-  .habit-row,
   .heatmap-row,
   .heatmap,
   .compare-table-wrap,
