@@ -47,7 +47,6 @@
             </form>
         </details>
 
-                <button id="theme-toggle" class="theme-toggle--floating" aria-label="toggle theme">◐</button>
 
         <div class="sidebar-user">
             <span class="sidebar-username">{{ current_user.username }}</span>
@@ -134,9 +133,12 @@
 </div>
 {% endfor %}
             </section>
-                        {% if flexible_habits %}
-            <section class="card card--full">
-                <h2>Flexible habits</h2>
+                                   {% if flexible_habits %}
+            <details class="flexible-details">
+                <summary>
+                    <span>Flexible habits</span>
+                    <span class="flexible-hint">▼</span>
+                </summary>
                 <div class="flexible-list">
                     {% for habit in flexible_habits %}
                     <div class="flexible-item">
@@ -156,7 +158,7 @@
                     </div>
                     {% endfor %}
                 </div>
-            </section>
+            </details>
             {% endif %}
 
             <section class="card">
@@ -237,10 +239,13 @@
     </main>
 
 </div>
+<button id="theme-toggle" class="theme-toggle--floating" aria-label="toggle theme">◐</button>
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script src="{{ url_for('static', filename='js/stats.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="{{ url_for('static', filename='js/stats-daily.js') }}"></script>
 <script>
     requestAnimationFrame(() => {
