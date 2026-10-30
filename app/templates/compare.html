@@ -29,8 +29,7 @@
             <a href="{{ url_for('main.export') }}" class="nav-link">Export</a>
         </nav>
 
-        <button id="theme-toggle" class="theme-toggle nav-theme" aria-label="toggle theme">◐</button>
-    </aside>
+
 
     <main class="main">
         <div class="dashboard">
@@ -89,7 +88,9 @@
     </main>
 
 </div>
-
+<button id="theme-toggle" class="theme-toggle--floating" aria-label="toggle theme">◐</button>
+        
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script>
 if ('serviceWorker' in navigator) {
