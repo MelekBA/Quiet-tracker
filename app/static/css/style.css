@@ -1651,3 +1651,20 @@ h2 {
     display: none !important;
   }
 }
+@media (max-width: 720px) {
+  /* Force delete button to show, override any old hide rules */
+  .card--tall .habit-item .habit-row form button.delete-btn {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 0.6 !important;
+    width: 26px !important;
+    height: 26px !important;
+    flex: 0 0 auto !important;
+    font-size: 1.1rem !important;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: inherit;
+  }
+}
