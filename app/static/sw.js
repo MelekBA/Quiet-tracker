@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'quiet-tracker-v6';
+const CACHE_VERSION = 'quiet-tracker-v8';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 
@@ -6,7 +6,7 @@ const STATIC_ASSETS = [
   '/static/css/style.css',
   '/static/js/app.js',
   '/static/js/stats.js',
-  '/static/js/stats-daily.js',
+  '/static/js/stats-daily.js',  
   '/static/manifest.json',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
 ];

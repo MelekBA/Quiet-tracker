@@ -1555,21 +1555,70 @@ h2 {
     max-width: 100% !important;
   }
 }
-@media (max-width: 720px) {
-  .card--tall .habit-item .habit-row .habit-name,
-  .card--tall .habit-item .habit-row .habit-name * {
-    display: inline-block !important;
-    flex: 1 1 auto !important;
-    min-width: 60px !important;
-    width: auto !important;
-    max-width: none !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    white-space: nowrap !important;
-    color: inherit !important;
-    font-size: 0.82rem !important;
+  /* Today's habits: 1 column layout */
+  .card--tall {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0;
+  }
+  .card--tall > h2 {
+    margin: 0 0 0.5rem;
+  }
+  .habit-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    min-width: 0;
+  }
+  .habit-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 !important;
+  }
+  .habit-dot { width: 10px !important; height: 10px !important; flex: 0 0 auto; }
+  .habit-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+  }
+  
+  /* Bring back the streak and delete button */
+  .streak {
+    display: block !important;
+    font-size: 0.75rem;
+    flex: 0 0 auto;
+  }
+  .streak .pb {
+    display: inline !important;
+  }
+  .delete-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 26px !important;
+    height: 26px !important;
+    flex: 0 0 auto !important;
+    font-size: 1.1rem;
+    opacity: 0.6;
+  }
+  .check {
+    width: 32px !important;
+    height: 32px !important;
+    flex: 0 0 auto !important;
+    font-size: 0.85rem;
+  }
+  .note-block { margin: 0 !important; padding: 0 !important; }
+  .note-block > summary {
+    font-size: 0.7rem;
+    padding: 0.15rem 0;
+    opacity: 0.5;
   }
 }@media (max-width: 720px) {
   /* Two-column habit list, minimal per-row content */
