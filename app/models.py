@@ -6,14 +6,14 @@ from .db import get_db
 
 def get_habits(user_id):
     rows = get_db().execute(
-        "SELECT id, name, color, created FROM habits "
+        "SELECT id, name, color, created, period FROM habits "
         "WHERE user_id = %s ORDER BY position, id",
         (user_id,)
     ).fetchall()
     return [dict(r) for r in rows]
 
 
-def add_habit(user_id, name, color="#7c9a92"):
+def add_habit(user_id, name, color="#7c9a92", period=None):
     hid = str(uuid.uuid4())[:8]
     created = date.today().isoformat()
     db = get_db()
@@ -22,12 +22,12 @@ def add_habit(user_id, name, color="#7c9a92"):
         (user_id,)
     ).fetchone()
     db.execute(
-        "INSERT INTO habits (id, user_id, name, color, created, position) "
-        "VALUES (%s, %s, %s, %s, %s, %s)",
-        (hid, user_id, name, color, created, row["p"] + 1),
+        "INSERT INTO habits (id, user_id, name, color, created, position, period) "
+        "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+        (hid, user_id, name, color, created, row["p"] + 1, period),
     )
     db.commit()
-    return {"id": hid, "name": name, "color": color, "created": created}
+    return {"id": hid, "name": name, "color": color, "created": created, "period": period}
 
 
 def _owned(db, habit_id, user_id):
@@ -56,12 +56,44 @@ def toggle_habit(user_id, date_str, habit_id):
     ).fetchone()
     new = 0 if (row and row["done"]) else 1
     db.execute(
-        "INSERT INTO logs (date, habit_id, done) VALUES (%s, %s, %s) "
+        "INSERT INTO logs (date, habit_id, done, count) VALUES (%s, %s, %s, 1) "
         "ON CONFLICT (date, habit_id) DO UPDATE SET done = EXCLUDED.done",
         (date_str, habit_id, new),
     )
     db.commit()
     return bool(new)
+
+
+def increment_flexible(user_id, date_str, habit_id):
+    db = get_db()
+    if not _owned(db, habit_id, user_id):
+        return None
+    db.execute(
+        "INSERT INTO logs (date, habit_id, done, count) VALUES (%s, %s, 1, 1) "
+        "ON CONFLICT (date, habit_id) DO UPDATE SET done = 1, count = logs.count + 1",
+        (date_str, habit_id),
+    )
+    db.commit()
+    row = db.execute("SELECT count FROM logs WHERE date = %s AND habit_id = %s", (date_str, habit_id)).fetchone()
+    return row["count"]
+
+
+def get_period_counts(user_id):
+    db = get_db()
+    today = date.today()
+    monday = today - timedelta(days=today.weekday())
+    first_of_month = today.replace(day=1)
+
+    habits = db.execute("SELECT id, period FROM habits WHERE user_id = %s AND period IS NOT NULL", (user_id,)).fetchall()
+    counts = {}
+    for h in habits:
+        start_date = monday if h["period"] == "week" else first_of_month
+        row = db.execute(
+            "SELECT COALESCE(SUM(count), 0) AS c FROM logs WHERE habit_id = %s AND date >= %s",
+            (h["id"], start_date.isoformat())
+        ).fetchone()
+        counts[h["id"]] = row["c"]
+    return counts
 
 
 def set_note(user_id, date_str, habit_id, text):
@@ -86,7 +118,7 @@ def set_note(user_id, date_str, habit_id, text):
 
 def get_all_logs(user_id):
     rows = get_db().execute(
-        "SELECT l.date, l.habit_id, l.done FROM logs l "
+        "SELECT l.date, l.habit_id, l.done, l.count FROM logs l "
         "JOIN habits h ON h.id = l.habit_id "
         "WHERE h.user_id = %s",
         (user_id,)
@@ -111,14 +143,14 @@ def get_completion_stats(user_id, window_days=30):
     done_rows = db.execute(
         "SELECT l.habit_id, COUNT(*) AS n FROM logs l "
         "JOIN habits h ON h.id = l.habit_id "
-        "WHERE h.user_id = %s AND l.done = 1 AND l.date BETWEEN %s AND %s "
+        "WHERE h.user_id = %s AND h.period IS NULL AND l.done = 1 AND l.date BETWEEN %s AND %s "
         "GROUP BY l.habit_id",
         (user_id, start.isoformat(), today.isoformat())
     ).fetchall()
     done_by = {r["habit_id"]: r["n"] for r in done_rows}
     habits = db.execute(
         "SELECT id, name, color, created FROM habits "
-        "WHERE user_id = %s ORDER BY position, id",
+        "WHERE user_id = %s AND period IS NULL ORDER BY position, id",
         (user_id,)
     ).fetchall()
     result = []
@@ -142,13 +174,13 @@ def get_daily_totals(user_id, window_days=30):
     done_rows = db.execute(
         "SELECT l.date, COUNT(*) AS n FROM logs l "
         "JOIN habits h ON h.id = l.habit_id "
-        "WHERE h.user_id = %s AND l.done = 1 AND l.date BETWEEN %s AND %s "
+        "WHERE h.user_id = %s AND h.period IS NULL AND l.done = 1 AND l.date BETWEEN %s AND %s "
         "GROUP BY l.date",
         (user_id, start.isoformat(), today.isoformat())
     ).fetchall()
     done_by = {r["date"]: r["n"] for r in done_rows}
     total = db.execute(
-        "SELECT COUNT(*) AS n FROM habits WHERE user_id = %s", (user_id,)
+        "SELECT COUNT(*) AS n FROM habits WHERE user_id = %s AND period IS NULL", (user_id,)
     ).fetchone()["n"]
     result = []
     for i in range(window_days - 1, -1, -1):
@@ -174,7 +206,7 @@ def get_comparison(user_id, period="week"):
         rows = db.execute(
             "SELECT l.habit_id, COUNT(*) AS n FROM logs l "
             "JOIN habits h ON h.id = l.habit_id "
-            "WHERE h.user_id = %s AND l.done = 1 AND l.date BETWEEN %s AND %s "
+            "WHERE h.user_id = %s AND h.period IS NULL AND l.done = 1 AND l.date BETWEEN %s AND %s "
             "GROUP BY l.habit_id",
             (user_id, start.isoformat(), end.isoformat())
         ).fetchall()
@@ -183,7 +215,7 @@ def get_comparison(user_id, period="week"):
     cur_by = counts(current_start, today)
     prev_by = counts(previous_start, previous_end)
     habits = db.execute(
-        "SELECT id, name, color FROM habits WHERE user_id = %s ORDER BY position, id",
+        "SELECT id, name, color FROM habits WHERE user_id = %s AND period IS NULL ORDER BY position, id",
         (user_id,)
     ).fetchall()
 

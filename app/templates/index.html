@@ -30,11 +30,16 @@
             <a href="{{ url_for('main.settings') }}" class="nav-link">Settings</a>
         </nav>
 
-        <details class="sidebar-add-wrap">
+                <details class="sidebar-add-wrap">
             <summary>+ Add habit</summary>
             <form method="post" action="{{ url_for('main.add') }}" class="sidebar-add">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="text" name="name" placeholder="Habit name" required autocomplete="off">
+                <select name="period">
+                    <option value="">Daily (scored)</option>
+                    <option value="week">Weekly (flexible)</option>
+                    <option value="month">Monthly (flexible)</option>
+                </select>
                 <div class="sidebar-add-row">
                     <input type="color" name="color" value="#7c9a92" aria-label="habit color">
                     <button type="submit">Add</button>
@@ -42,7 +47,7 @@
             </form>
         </details>
 
-        <button id="theme-toggle" class="theme-toggle nav-theme" aria-label="toggle theme">◐</button>
+                <button id="theme-toggle" class="theme-toggle--floating" aria-label="toggle theme">◐</button>
 
         <div class="sidebar-user">
             <span class="sidebar-username">{{ current_user.username }}</span>
@@ -129,6 +134,30 @@
 </div>
 {% endfor %}
             </section>
+                        {% if flexible_habits %}
+            <section class="card card--full">
+                <h2>Flexible habits</h2>
+                <div class="flexible-list">
+                    {% for habit in flexible_habits %}
+                    <div class="flexible-item">
+                        <span class="habit-dot" style="background: {{ habit.color }}"></span>
+                        <span class="flexible-name">{{ habit.name }}</span>
+                        <span class="flexible-count" id="count-{{ habit.id }}" data-period="{{ habit.period }}">
+                            {{ habit.period_count }} this {{ habit.period }}
+                        </span>
+                        <button class="flexible-btn" onclick="incrementFlexible('{{ habit.id }}', this)">+1</button>
+                        <form method="post"
+                              action="{{ url_for('main.delete', habit_id=habit.id) }}"
+                              onsubmit="return confirm('Delete this habit? This cannot be undone.');"
+                              style="margin:0; display:inline-flex;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="delete-btn" aria-label="delete">×</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
 
             <section class="card">
                 <h2>Completion · 30d</h2>

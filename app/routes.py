@@ -112,7 +112,14 @@ def home():
         })
 
     uid = current_user.id
-    habits = models.get_habits(uid)
+    all_habits = models.get_habits(uid)
+    daily_habits = [h for h in all_habits if not h["period"]]
+    flexible_habits = [h for h in all_habits if h["period"]]
+    
+    period_counts = models.get_period_counts(uid)
+    for h in flexible_habits:
+        h["period_count"] = period_counts.get(h["id"], 0)
+
     all_logs = models.get_all_logs(uid)
     today_notes = models.get_notes_for_date(uid, today_str)
 
@@ -126,7 +133,7 @@ def home():
     heatmap_days = [heatmap_start + timedelta(days=i) for i in range(84)]
 
     habits_with_state = []
-    for habit in habits:
+    for habit in daily_habits:
         done = done_by_habit.get(habit["id"], set())
         current_streak, best_streak = _streaks(done, today)
         habits_with_state.append({
@@ -154,13 +161,13 @@ def home():
         day["total"] = len(habits_with_state)
 
     today_done = sum(1 for h in habits_with_state if h["done_today"])
-    today_total = len(habits_with_state)
+    today_total = len(habits_with_state) # Only daily habits count towards the percentage
     today_pct = round(today_done / today_total * 100) if today_total else 0
     longest_streak = max((h["streak"] for h in habits_with_state), default=0)
 
     return render_template(
         "index.html",
-        today=today_str, days=days, habits=habits_with_state,
+        today=today_str, days=days, habits=habits_with_state, flexible_habits=flexible_habits,
         today_done=today_done, today_total=today_total,
         today_pct=today_pct, longest_streak=longest_streak,
     )
@@ -173,8 +180,11 @@ def home():
 def add():
     name = request.form.get("name", "").strip()
     color = request.form.get("color", "#7c9a92")
+    period = request.form.get("period", "")
+    if period not in ("week", "month"):
+        period = None
     if name:
-        models.add_habit(current_user.id, name, color)
+        models.add_habit(current_user.id, name, color, period)
     return redirect(url_for("main.home"))
 
 
@@ -185,6 +195,13 @@ def toggle(date_str, habit_id):
     if result is None:
         abort(404)
     return redirect(url_for("main.home"))
+@main.route("/flexible/increment/<habit_id>", methods=["POST"])
+@login_required
+def increment_flexible(habit_id):
+    result = models.increment_flexible(current_user.id, date.today().isoformat(), habit_id)
+    if result is None:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"count": result})
 
 
 @main.route("/delete/<habit_id>", methods=["POST"])
