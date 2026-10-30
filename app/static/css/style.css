@@ -1668,3 +1668,8 @@ h2 {
     color: inherit;
   }
 }
+.settings-meta {
+    color: var(--text-muted, #666);
+    font-size: 0.95rem;
+    margin: 0.25rem 0 0;
+}

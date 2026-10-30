@@ -258,3 +258,7 @@ def service_worker():
     response.headers["Service-Worker-Allowed"] = "/"
     response.headers["Cache-Control"] = "no-cache"
     return response
+@main.route("/settings")
+@login_required
+def settings():
+    return render_template("settings.html")
