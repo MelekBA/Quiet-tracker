@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings — Quiet Tracker</title>
+    <script>
+        if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#7c9a92">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+</head>
+<body>
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <h1>Quiet Tracker</h1>
+        </div>
+
+        <nav class="nav">
+            <a href="{{ url_for('main.home') }}" class="nav-link">Overview</a>
+            <a href="{{ url_for('main.compare') }}" class="nav-link">Compare</a>
+            <a href="{{ url_for('main.export') }}" class="nav-link">Export</a>
+            <a href="{{ url_for('main.settings') }}" class="nav-link active">Settings</a>
+        </nav>
+
+        <details class="sidebar-add-wrap">
+            <summary>+ Add habit</summary>
+            <form method="post" action="{{ url_for('main.add') }}" class="sidebar-add">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="text" name="name" placeholder="Habit name" required autocomplete="off">
+                <div class="sidebar-add-row">
+                    <input type="color" name="color" value="#7c9a92" aria-label="habit color">
+                    <button type="submit">Add</button>
+                </div>
+            </form>
+        </details>
+
+        <button id="theme-toggle" class="theme-toggle nav-theme" aria-label="toggle theme">◐</button>
+
+        <div class="sidebar-user">
+            <span class="sidebar-username">{{ current_user.username }}</span>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="dashboard">
+
+            <section class="card card--full">
+                <h2>Account</h2>
+                <p class="settings-meta">Signed in as <strong>{{ current_user.username }}</strong></p>
+            </section>
+
+            <section class="card card--full">
+                <h2>Notifications</h2>
+                <p class="settings-meta">Daily reminders — coming soon.</p>
+            </section>
+
+            <section class="card card--full">
+                <h2>Log out</h2>
+                <form method="post" action="{{ url_for('main.logout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="logout-btn">Log out</button>
+                </form>
+            </section>
+
+        </div>
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
