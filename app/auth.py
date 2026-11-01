@@ -1,31 +1,26 @@
 import uuid
 from datetime import date
-
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
-
 from .db import get_db
 
-
 class User(UserMixin):
-    def __init__(self, id, username):
+    def __init__(self, id, username, reminder_time=None):
         self.id = id
         self.username = username
-
+        self.reminder_time = reminder_time
 
 def get_user(user_id):
     row = get_db().execute(
-        "SELECT id, username FROM users WHERE id = %s", (user_id,)
+        "SELECT id, username, reminder_time FROM users WHERE id = %s", (user_id,)
     ).fetchone()
-    return User(row["id"], row["username"]) if row else None
-
+    return User(row["id"], row["username"], row["reminder_time"]) if row else None
 
 def get_user_by_username(username):
     row = get_db().execute(
-        "SELECT id, username FROM users WHERE username = %s", (username,)
+        "SELECT id, username, reminder_time FROM users WHERE username = %s", (username,)
     ).fetchone()
-    return User(row["id"], row["username"]) if row else None
-
+    return User(row["id"], row["username"], row["reminder_time"]) if row else None
 
 def create_user(username, password):
     uid = str(uuid.uuid4())[:8]
@@ -38,14 +33,13 @@ def create_user(username, password):
     db.commit()
     return User(uid, username)
 
-
 def verify_password(username, password):
     row = get_db().execute(
-        "SELECT id, username, password_hash FROM users WHERE username = %s",
+        "SELECT id, username, password_hash, reminder_time FROM users WHERE username = %s",
         (username,),
     ).fetchone()
     if not row:
         return None
     if not check_password_hash(row["password_hash"], password):
         return None
-    return User(row["id"], row["username"])
+    return User(row["id"], row["username"], row["reminder_time"])

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'quiet-tracker-v12';
+const CACHE_VERSION = 'quiet-tracker-v16';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 
@@ -77,4 +77,37 @@ self.addEventListener('fetch', event => {
     );
     return;
   }
+});
+// ... existing code ...
+
+self.addEventListener('push', function(event) {
+  if (event.data) {
+    const data = event.data.json();
+    const options = {
+      body: data.body,
+      icon: '/static/icons/icon-192.png',
+      badge: '/static/icons/icon-192.png',
+      vibrate: [100, 50, 100]
+    };
+    event.waitUntil(
+      self.registration.showNotification(data.title, options)
+    );
+  }
+});
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then(function(clientList) {
+      for (var i = 0; i < clientList.length; i++) {
+        var client = clientList[i];
+        if (client.url === '/' && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
+    })
+  );
 });

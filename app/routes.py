@@ -1,6 +1,8 @@
 import io
 import json
 from datetime import date, timedelta
+from pywebpush import webpush, WebPushException
+from flask import current_app, jsonify
 
 from flask import (
     Blueprint,
@@ -279,3 +281,60 @@ def service_worker():
 @login_required
 def settings():
     return render_template("settings.html")
+@main.route("/settings/save_reminder", methods=["POST"])
+@login_required
+def save_reminder():
+    time_str = request.form.get("reminder_time")
+    if time_str:
+        models.update_reminder_time(current_user.id, time_str)
+    return redirect(url_for("main.settings"))
+
+@main.route("/push/public_key")
+def push_public_key():
+    return jsonify({"publicKey": current_app.config["VAPID_PUBLIC_KEY"]})
+
+@main.route("/push/subscribe", methods=["POST"])
+@login_required
+def push_subscribe():
+    sub_info = request.json
+    if not sub_info:
+        return jsonify({"error": "No subscription data"}), 400
+    models.save_subscription(current_user.id, sub_info)
+    return jsonify({"status": "success"})
+
+@main.route("/cron/notifications")
+def cron_notifications():
+    from datetime import datetime
+    now = datetime.utcnow()
+    # Only trigger in the first 4 minutes of the hour to avoid duplicates 
+    # if cron-job.org hits slightly early or late.
+    if now.minute >= 5:
+        return jsonify({"status": "skipped", "reason": "not top of hour"})
+        
+    current_time_str = now.strftime("%H:00")
+    users_to_notify = models.get_due_users(current_time_str)
+    
+    success_count = 0
+    for user in users_to_notify:
+        sub_info = {
+            "endpoint": user["endpoint"],
+            "keys": {"p256dh": user["p256dh"], "auth": user["auth"]}
+        }
+        try:
+            webpush(
+                subscription_info=sub_info,
+                data=json.dumps({
+                    "title": "Quiet Tracker",
+                    "body": "Time for your daily habits! Keep your streak alive."
+                }),
+                vapid_private_key=current_app.config["VAPID_PRIVATE_KEY"],
+                vapid_claims={"sub": current_app.config["VAPID_CLAIM_EMAIL"]}
+            )
+            success_count += 1
+        except WebPushException as ex:
+            # If the subscription is dead (410 Gone), remove it from the DB
+            if ex.response and ex.response.status_code == 410:
+                models.delete_subscription(user["endpoint"])
+            print(f"Push failed: {ex}")
+            
+    return jsonify({"status": "done", "sent": success_count})

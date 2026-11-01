@@ -45,9 +45,19 @@
                 <p class="settings-meta">Signed in as <strong>{{ current_user.username }}</strong></p>
             </section>
 
-            <section class="card card--full">
+                       <section class="card card--full">
                 <h2>Notifications</h2>
-                <p class="settings-meta">Daily reminders — coming soon.</p>
+                <p class="settings-meta">Set a daily reminder to log your habits.</p>
+                <form method="post" action="{{ url_for('main.save_reminder') }}" style="margin-top: 1rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="time" name="reminder_time" value="{{ current_user.reminder_time or '09:00' }}" style="padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                    <button type="submit" class="flexible-btn" style="padding: 8px 16px;">Save Time</button>
+                </form>
+                
+                <div style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                    <button id="enable-push" class="flexible-btn" style="width: 100%; padding: 10px;">Enable Push Notifications</button>
+                    <p id="push-status" class="settings-meta" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
+                </div>
             </section>
 
             <section class="card card--full">

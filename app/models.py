@@ -234,3 +234,33 @@ def get_comparison(user_id, period="week"):
         "previous_range": f"{previous_start.isoformat()} → {previous_end.isoformat()}",
         "rows": rows,
     }
+    
+def save_subscription(user_id, subscription_info):
+    db = get_db()
+    db.execute(
+        "INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth) "
+        "VALUES (%s, %s, %s, %s) "
+        "ON CONFLICT (endpoint) DO UPDATE SET user_id = EXCLUDED.user_id",
+        (user_id, subscription_info['endpoint'], subscription_info['keys']['p256dh'], subscription_info['keys']['auth'])
+    )
+    db.commit()
+
+def update_reminder_time(user_id, time_str):
+    db = get_db()
+    db.execute("UPDATE users SET reminder_time = %s WHERE id = %s", (time_str, user_id))
+    db.commit()
+
+def get_due_users(current_time_str):
+    db = get_db()
+    rows = db.execute(
+        "SELECT u.id, s.endpoint, s.p256dh, s.auth FROM users u "
+        "JOIN push_subscriptions s ON u.id = s.user_id "
+        "WHERE u.reminder_time = %s",
+        (current_time_str,)
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+def delete_subscription(endpoint):
+    db = get_db()
+    db.execute("DELETE FROM push_subscriptions WHERE endpoint = %s", (endpoint,))
+    db.commit()
