@@ -342,3 +342,36 @@ def cron_notifications():
             print(f"Push failed: {ex}")
 
     return jsonify({"status": "done", "sent": success_count})
+@main.route("/cron/test_notification")
+def test_notification():
+    from pywebpush import webpush, WebPushException
+    from .db import get_db
+    import json
+    db = get_db()
+    # Fetch ALL subscriptions, ignoring the reminder time
+    rows = db.execute("SELECT endpoint, p256dh, auth FROM push_subscriptions").fetchall()
+    if not rows:
+        return "No subscriptions found in the database!"
+    
+    success = 0
+    errors = []
+    for r in rows:
+        sub_info = {
+            "endpoint": r["endpoint"],
+            "keys": {"p256dh": r["p256dh"], "auth": r["auth"]}
+        }
+        try:
+            webpush(
+                subscription_info=sub_info,
+                data=json.dumps({"title": "Test Alert!", "body": "If you see this, push works!"}),
+                vapid_private_key=current_app.config["VAPID_PRIVATE_KEY"],
+                vapid_claims={"sub": current_app.config["VAPID_CLAIM_EMAIL"]}
+            )
+            success += 1
+        except Exception as ex:
+            errors.append(str(ex))
+            print(f"Error: {ex}")
+            
+    if errors:
+        return f"Sent {success} successfully. Errors: {errors}"
+    return f"Successfully sent {success} notifications!"
