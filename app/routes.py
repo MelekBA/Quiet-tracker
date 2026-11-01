@@ -306,41 +306,52 @@ def push_subscribe():
 def cron_notifications():
     from datetime import datetime
     import zoneinfo
+    from .db import get_db
+    db = get_db()
 
-    # Get the current time in Tunisia
     tunisia_tz = zoneinfo.ZoneInfo("Africa/Tunis")
-    now_local = datetime.now(tunisia_tz)
+    now = datetime.now(tunisia_tz)
+    today_str = now.strftime("%Y-%m-%d")
 
-    # Only trigger in the first 4 minutes of the hour to avoid duplicates
-    if now_local.minute >= 5:
-        return jsonify({"status": "skipped", "reason": "not top of hour"})
-
-    # Format the time as HH:00 to match what the user saved
-    current_time_str = now_local.strftime("%H:00")
-    users_to_notify = models.get_due_users(current_time_str)
+    # Fetch users who have a reminder time and haven't been notified today
+    users = db.execute(
+        "SELECT u.id, u.reminder_time, s.endpoint, s.p256dh, s.auth "
+        "FROM users u JOIN push_subscriptions s ON u.id = s.user_id "
+        "WHERE u.reminder_time IS NOT NULL AND (u.last_notified_date IS NULL OR u.last_notified_date != %s)",
+        (today_str,)
+    ).fetchall()
 
     success_count = 0
-    for user in users_to_notify:
-        sub_info = {
-            "endpoint": user["endpoint"],
-            "keys": {"p256dh": user["p256dh"], "auth": user["auth"]}
-        }
-        try:
-            webpush(
-                subscription_info=sub_info,
-                data=json.dumps({
-                    "title": "Quiet Tracker",
-                    "body": "Time for your daily habits! Keep your streak alive."
-                }),
-                vapid_private_key=current_app.config["VAPID_PRIVATE_KEY"],
-                vapid_claims={"sub": current_app.config["VAPID_CLAIM_EMAIL"]}
-            )
-            success_count += 1
-        except WebPushException as ex:
-            if ex.response and ex.response.status_code == 410:
-                models.delete_subscription(user["endpoint"])
-            print(f"Push failed: {ex}")
 
+    for user in users:
+        rem_time = user['reminder_time']
+        rem_h, rem_m = map(int, rem_time.split(':'))
+        
+        # If the current time is PAST the reminder time (and we haven't sent it today)
+        if now.hour > rem_h or (now.hour == rem_h and now.minute >= rem_m):
+            sub_info = {
+                "endpoint": user["endpoint"],
+                "keys": {"p256dh": user["p256dh"], "auth": user["auth"]}
+            }
+            try:
+                webpush(
+                    subscription_info=sub_info,
+                    data=json.dumps({
+                        "title": "Quiet Tracker",
+                        "body": "Time for your daily habits! Keep your streak alive."
+                    }),
+                    vapid_private_key=current_app.config["VAPID_PRIVATE_KEY"],
+                    vapid_claims={"sub": current_app.config["VAPID_CLAIM_EMAIL"]}
+                )
+                success_count += 1
+                # Mark as notified for today so they don't get spammed
+                db.execute("UPDATE users SET last_notified_date = %s WHERE id = %s", (today_str, user['id']))
+            except WebPushException as ex:
+                if ex.response and ex.response.status_code == 410:
+                    models.delete_subscription(user["endpoint"])
+                print(f"Push failed: {ex}")
+
+    db.commit()
     return jsonify({"status": "done", "sent": success_count})
 @main.route("/cron/test_notification")
 def test_notification():
