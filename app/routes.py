@@ -305,15 +305,20 @@ def push_subscribe():
 @main.route("/cron/notifications")
 def cron_notifications():
     from datetime import datetime
-    now = datetime.utcnow()
-    # Only trigger in the first 4 minutes of the hour to avoid duplicates 
-    # if cron-job.org hits slightly early or late.
-    if now.minute >= 5:
+    import zoneinfo
+
+    # Get the current time in Tunisia
+    tunisia_tz = zoneinfo.ZoneInfo("Africa/Tunis")
+    now_local = datetime.now(tunisia_tz)
+
+    # Only trigger in the first 4 minutes of the hour to avoid duplicates
+    if now_local.minute >= 5:
         return jsonify({"status": "skipped", "reason": "not top of hour"})
-        
-    current_time_str = now.strftime("%H:00")
+
+    # Format the time as HH:00 to match what the user saved
+    current_time_str = now_local.strftime("%H:00")
     users_to_notify = models.get_due_users(current_time_str)
-    
+
     success_count = 0
     for user in users_to_notify:
         sub_info = {
@@ -332,9 +337,8 @@ def cron_notifications():
             )
             success_count += 1
         except WebPushException as ex:
-            # If the subscription is dead (410 Gone), remove it from the DB
             if ex.response and ex.response.status_code == 410:
                 models.delete_subscription(user["endpoint"])
             print(f"Push failed: {ex}")
-            
+
     return jsonify({"status": "done", "sent": success_count})
