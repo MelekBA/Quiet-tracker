@@ -23,10 +23,13 @@
     }
 })();
 
-// The flexible habit function MUST be outside the wrapper above!
-async function incrementFlexible(habitId, btnElement) {
+// Expose to window so the inline HTML onclick can find it
+window.incrementFlexible = async function(habitId, btnElement) {
     const csrfInput = document.querySelector('input[name="csrf_token"]');
-    if (!csrfInput) return;
+    if (!csrfInput) {
+        alert("CSRF token missing. Please refresh the page.");
+        return;
+    }
     
     const csrfToken = csrfInput.value;
     const originalText = btnElement.textContent;
@@ -65,4 +68,4 @@ async function incrementFlexible(habitId, btnElement) {
         btnElement.disabled = false;
         alert('Failed to log habit. Please try again.');
     }
-}
+};

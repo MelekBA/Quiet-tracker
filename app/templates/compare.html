@@ -11,8 +11,8 @@
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#7c9a92">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <meta name="theme-color" content="#7c9a92">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 </head>
 <body>
 <div class="app">
@@ -26,9 +26,13 @@
         <nav class="nav">
             <a href="{{ url_for('main.home') }}" class="nav-link">Overview</a>
             <a href="{{ url_for('main.compare') }}" class="nav-link active">Compare</a>
+            <a href="{{ url_for('main.settings') }}" class="nav-link">Settings</a>
         </nav>
 
-
+        <div class="sidebar-user">
+            <span class="sidebar-username">{{ current_user.username }}</span>
+        </div>
+    </aside> <!-- THIS WAS MISSING! -->
 
     <main class="main">
         <div class="dashboard">
@@ -53,31 +57,33 @@
 
             <section class="card card--full">
                 {% if data.rows %}
-                <table class="compare-table">
-                    <thead>
-                        <tr>
-                            <th>Habit</th>
-                            <th>Now</th>
-                            <th>Before</th>
-                            <th>Change</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in data.rows %}
-                        <tr>
-                            <td>
-                                <span class="habit-dot" style="background: {{ row.color }}"></span>
-                                {{ row.name }}
-                            </td>
-                            <td>{{ row.current }} / {{ row.days }}</td>
-                            <td>{{ row.previous }} / {{ row.days }}</td>
-                            <td class="{% if row.delta > 0 %}delta-up{% elif row.delta < 0 %}delta-down{% endif %}">
-                                {% if row.delta > 0 %}+{% endif %}{{ row.delta }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="compare-table-wrap">
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Habit</th>
+                                <th>Now</th>
+                                <th>Before</th>
+                                <th>Change</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in data.rows %}
+                            <tr>
+                                <td>
+                                    <span class="habit-dot" style="background: {{ row.color }}"></span>
+                                    {{ row.name }}
+                                </td>
+                                <td>{{ row.current }} / {{ row.days }}</td>
+                                <td>{{ row.previous }} / {{ row.days }}</td>
+                                <td class="{% if row.delta > 0 %}delta-up{% elif row.delta < 0 %}delta-down{% endif %}">
+                                    {% if row.delta > 0 %}+{% endif %}{{ row.delta }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% else %}
                 <p class="empty">No habits yet.</p>
                 {% endif %}
