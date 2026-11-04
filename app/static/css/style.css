@@ -492,3 +492,46 @@ h2 { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spa
 @media (prefers-reduced-motion: reduce) {
     .day-card, .day-card-dot, .donut-fill, .streak--milestone { transition: none; animation: none; }
 }
+/* ---------- Fix for Compare Page on Mobile ---------- */
+.compare-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px; /* keeps the scrollbar neat */
+}
+
+.compare-table {
+    min-width: 500px; /* forces the table to be readable, but inside the wrap */
+}
+
+@media (max-width: 720px) {
+    /* Ensure the main dashboard doesn't overflow horizontally */
+    .main {
+        min-width: 0 !important;
+        width: 100% !important;
+        overflow-x: hidden;
+    }
+    
+    /* Fix the compare header so it doesn't get squished */
+    .compare-head {
+        padding: 15px !important;
+    }
+    
+    /* Make sure the sidebar doesn't overlap the table */
+    .app {
+        overflow-x: hidden;
+    }
+    
+    /* Style the time filter buttons for mobile */
+    .tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .tab {
+        flex: 1;
+        text-align: center;
+        min-width: 80px;
+        padding: 8px 10px;
+    }
+}
