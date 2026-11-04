@@ -11,8 +11,8 @@
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#7c9a92">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <meta name="theme-color" content="#7c9a92">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 </head>
 <body>
 <div class="app">
@@ -29,7 +29,7 @@
             <a href="{{ url_for('main.settings') }}" class="nav-link">Settings</a>
         </nav>
 
-                <details class="sidebar-add-wrap">
+        <details class="sidebar-add-wrap">
             <summary>+ Add habit</summary>
             <form method="post" action="{{ url_for('main.add') }}" class="sidebar-add">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -45,7 +45,6 @@
                 </div>
             </form>
         </details>
-
 
         <div class="sidebar-user">
             <span class="sidebar-username">{{ current_user.username }}</span>
@@ -132,7 +131,8 @@
 </div>
 {% endfor %}
             </section>
-                                   {% if flexible_habits %}
+
+            {% if flexible_habits %}
             <details class="flexible-details">
                 <summary>
                     <span>Flexible habits</span>
@@ -237,14 +237,26 @@
         </div>
     </main>
 
+</div> <!-- End of .app -->
+
+<!-- Floating Buttons Container -->
+<div class="floating-actions">
+    <!-- AI Chat Button -->
+    <button id="ai-chat-btn" class="theme-toggle--floating ai-btn" aria-label="Ask AI">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </button>
+
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle--floating" aria-label="toggle theme">◐</button>
 </div>
-<button id="theme-toggle" class="theme-toggle--floating" aria-label="toggle theme">◐</button>
 
 
+
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 <script src="{{ url_for('static', filename='js/stats.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="{{ url_for('static', filename='js/stats-daily.js') }}"></script>
 <script>
     requestAnimationFrame(() => {
@@ -253,6 +265,26 @@
         });
     });
 </script>
+<!-- AI Chat Window (Hidden by default) -->
+<div id="ai-chat-window" class="ai-chat-window">
+    <div class="ai-chat-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="habit-dot" style="background: var(--accent); width: 8px; height: 8px;"></span>
+            <strong>AI Coach</strong>
+        </div>
+        <button id="close-chat-btn" class="close-btn">×</button>
+    </div>
+    
+    <div id="chat-history" class="chat-history">
+        <div class="chat-bubble ai-bubble">Hello! Ask me anything about your progress.</div>
+    </div>
+
+    <form id="chat-form" class="chat-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="text" id="chat-input" placeholder="How is my week going?" required autocomplete="off">
+        <button type="submit" id="send-btn" class="flexible-btn">Send</button>
+    </form>
+</div>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

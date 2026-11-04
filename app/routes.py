@@ -1,4 +1,6 @@
 import io
+import requests
+import os
 import json
 from datetime import date, timedelta
 from pywebpush import webpush, WebPushException
@@ -386,3 +388,61 @@ def test_notification():
     if errors:
         return f"Sent {success} successfully. Errors: {errors}"
     return f"Successfully sent {success} notifications!"
+
+
+
+@main.route("/api/ask", methods=["POST"])
+@login_required
+def api_ask():
+    data = request.json
+    question = data.get("question")
+    if not question:
+        return jsonify({"error": "No question provided"}), 400
+
+    # 1. Gather User Context (Last 30 days of data)
+    uid = current_user.id
+    habits = models.get_habits(uid)
+    daily_stats = models.get_completion_stats(uid, window_days=30)
+
+    # Create a compact summary for the AI
+    context = {
+        "habits": [{"name": h["name"], "type": h["period"] or "daily"} for h in habits],
+        "stats_30d": daily_stats,
+    }
+
+    # Convert to JSON while keeping actual emojis instead of unicode escapes
+    context_json = json.dumps(context, ensure_ascii=False)
+
+    # 2. Build the Prompt
+    prompt = f"""
+    You are a helpful, concise habit coach inside an app called Quiet Tracker.
+    The user is asking you a question about their progress.
+    
+    Here is their habit data from the last 30 days:
+    {json.dumps(context)}
+    
+    User Question: {question}
+    
+    Answer the user directly in a friendly tone based on the data provided. Keep it under 3 sentences. 
+    If they ask for a summary, highlight their best habit and suggest one small improvement.
+    """
+
+    # 3. Send to Ollama
+    ollama_url = os.environ.get("OLLAMA_API_URL", "http://localhost:11434")
+    
+    try:
+        response = requests.post(
+            f"{ollama_url}/api/generate",
+            json={
+                "model": "quiet-coach",
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=45 # Give it up to 45 seconds to reply
+        )
+        response.raise_for_status()
+        ai_reply = response.json().get("response", "I couldn't generate a response.")
+        return jsonify({"answer": ai_reply.strip()})
+    except Exception as e:
+        print(f"AI Error: {e}")
+        return jsonify({"error": "Make sure Ollama is running on your PC!"}), 500
