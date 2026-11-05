@@ -5,6 +5,7 @@ import json
 from datetime import date, timedelta
 from pywebpush import webpush, WebPushException
 from flask import current_app, jsonify
+from openai import OpenAI
 
 from flask import (
     Blueprint,
@@ -404,45 +405,52 @@ def api_ask():
     habits = models.get_habits(uid)
     daily_stats = models.get_completion_stats(uid, window_days=30)
 
-    # Create a compact summary for the AI
     context = {
         "habits": [{"name": h["name"], "type": h["period"] or "daily"} for h in habits],
         "stats_30d": daily_stats,
     }
-
-    # Convert to JSON while keeping actual emojis instead of unicode escapes
     context_json = json.dumps(context, ensure_ascii=False)
 
-    # 2. Build the Prompt
-    prompt = f"""
+    # 2. Build the messages for the chat API
+    system_prompt = f"""
     You are a helpful, concise habit coach inside an app called Quiet Tracker.
-    The user is asking you a question about their progress.
-    
-    Here is their habit data from the last 30 days:
-    {json.dumps(context)}
-    
-    User Question: {question}
+    Here is the user's habit data from the last 30 days:
+    {context_json}
     
     Answer the user directly in a friendly tone based on the data provided. Keep it under 3 sentences. 
     If they ask for a summary, highlight their best habit and suggest one small improvement.
     """
-
-    # 3. Send to Ollama
-    ollama_url = os.environ.get("OLLAMA_API_URL", "http://localhost:11434")
     
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": question}
+    ]
+
+    # 3. Send to Groq (via OpenAI-compatible endpoint)
+    # Get your API key from environment variables
+    groq_api_key = os.environ.get("GROQ_API_KEY")
+    if not groq_api_key:
+        return jsonify({"error": "GROQ_API_KEY is not set on the server."}), 500
+
     try:
-        response = requests.post(
-            f"{ollama_url}/api/generate",
-            json={
-                "model": "quiet-coach",
-                "prompt": prompt,
-                "stream": False
-            },
-            timeout=45 # Give it up to 45 seconds to reply
+        client = OpenAI(
+            api_key=groq_api_key,
+            base_url="https://api.groq.com/openai/v1",
         )
-        response.raise_for_status()
-        ai_reply = response.json().get("response", "I couldn't generate a response.")
+        
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            temperature=0.3,
+            max_tokens=150
+        )
+        
+        ai_reply = response.choices[0].message.content
         return jsonify({"answer": ai_reply.strip()})
+
     except Exception as e:
-        print(f"AI Error: {e}")
-        return jsonify({"error": "Make sure Ollama is running on your PC!"}), 500
+        # This will now print the specific error type to your Render logs
+        error_type = type(e).__name__
+        print(f"AI API Error ({error_type}): {e}")
+        # And send it back to the frontend for easier debugging
+        return jsonify({"error": f"AI Error ({error_type}): {str(e)}"}), 500
