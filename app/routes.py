@@ -439,7 +439,7 @@ def api_ask():
         )
         
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-20b",
             messages=messages,
             temperature=0.3,
             max_tokens=150
@@ -449,8 +449,5 @@ def api_ask():
         return jsonify({"answer": ai_reply.strip()})
 
     except Exception as e:
-        # This will now print the specific error type to your Render logs
-        error_type = type(e).__name__
-        print(f"AI API Error ({error_type}): {e}")
-        # And send it back to the frontend for easier debugging
-        return jsonify({"error": f"AI Error ({error_type}): {str(e)}"}), 500
+        print(f"AI API Error: {e}")
+        return jsonify({"error": "The AI service is currently unavailable."}), 500
