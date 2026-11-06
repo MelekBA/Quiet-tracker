@@ -147,3 +147,15 @@ if (avatarUpload) {
         reader.readAsDataURL(file);
     });
 }
+// ---------- Toggle Profile Edit Mode ----------
+function toggleProfileEdit() {
+    const view = document.getElementById('profile-view');
+    const edit = document.getElementById('profile-edit');
+    if (view.style.display === 'none') {
+        view.style.display = 'block';
+        edit.style.display = 'none';
+    } else {
+        view.style.display = 'none';
+        edit.style.display = 'block';
+    }
+}

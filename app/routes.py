@@ -427,29 +427,27 @@ def api_ask():
     if not question:
         return jsonify({"error": "No question provided"}), 400
 
-    # 1. Gather User Context (Last 30 days of data)
-    uid = current_user.id
-    habits = models.get_habits(uid)
-    daily_stats = models.get_completion_stats(uid, window_days=30)
-
+        # 1. Gather User Context
     context = {
-        "username": current_user.username, 
+        "user_profile": {
+            "name": current_user.username,
+            "bio": current_user.bio or "No bio provided yet."
+        },
         "habits": [{"name": h["name"], "type": h["period"] or "daily"} for h in habits],
         "stats_30d": daily_stats,
     }
     context_json = json.dumps(context, ensure_ascii=False)
 
-    # 2. Build the messages for the chat API
-    username = current_user.username
+    # 2. Build the messages
     system_prompt = f"""
-     You are a helpful, concise habit coach inside an app called Quiet Tracker.
-    The user's name is {username}. You must address them by this name in your response.
+    You are a helpful, concise habit coach inside an app called Quiet Tracker.
+    Address the user by their name.
     
-    Here is their habit data from the last 30 days:
+    Here is the user's profile and habit data in JSON format:
     {context_json}
     
     Answer the user directly in a friendly tone based on the data provided. Keep it under 3 sentences. 
-    If they ask for a summary, highlight their best habit and suggest one small improvement.
+    If the user asks about their bio or profile, refer to the JSON data above.
     """
     
     messages = [

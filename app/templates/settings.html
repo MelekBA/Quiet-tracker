@@ -46,35 +46,55 @@
     <main class="main">
         <div class="dashboard">
 
-                        <!-- Profile Card -->
+                                   <!-- Profile Card -->
             <section class="card card--full">
                 <h2>Profile</h2>
-                <form method="post" action="{{ url_for('main.save_profile') }}" id="profile-form" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    
-                    <div style="display: flex; align-items: center; gap: 1.5rem;">
-                        <!-- Avatar Preview -->
-                        <div class="avatar-preview" id="avatar-preview" style="background-color: {{ current_user.avatar_color }}; background-image: url('{{ current_user.avatar or '' }}');">
-                            {% if not current_user.avatar %}
-                                {{ current_user.username[0]|upper }}
-                            {% endif %}
+                
+                <!-- VIEW MODE -->
+                <div id="profile-view">
+                    <div class="profile-display">
+                        <div class="avatar-preview avatar-large" style="background-color: {{ current_user.avatar_color }}; background-image: url('{{ current_user.avatar or '' }}');">
+                            {% if not current_user.avatar %}{{ current_user.username[0]|upper }}{% endif %}
                         </div>
-                        
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
-                            <label class="settings-meta" for="username">Username</label>
-                            <input type="text" name="username" id="username" value="{{ current_user.username }}" required minlength="3" style="padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
-                            
-                            <label class="settings-meta" for="avatar-upload" style="margin-top: 0.5rem;">Profile Picture</label>
-                            <input type="file" id="avatar-upload" accept="image/*" style="font-size: 0.85rem; color: var(--muted);">
-                            <input type="hidden" name="avatar_base64" id="avatar_base64">
+                        <div class="profile-info">
+                            <h3 class="profile-name">{{ current_user.username }}</h3>
+                            <p class="profile-bio">{{ current_user.bio or "No bio added yet. Tell your AI coach about yourself!" }}</p>
                         </div>
                     </div>
+                    <button type="button" class="flexible-btn" style="margin-top: 1rem;" onclick="toggleProfileEdit()">Edit Profile</button>
+                </div>
 
-                    <label class="settings-meta" for="bio">Bio / Context for AI Coach</label>
-                    <textarea name="bio" id="bio" rows="2" placeholder="e.g., CS Student, trying to stay consistent." style="padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; resize: vertical;">{{ current_user.bio or '' }}</textarea>
-                    
-                    <button type="submit" class="flexible-btn" style="align-self: flex-start; padding: 8px 16px;">Save Profile</button>
-                </form>
+                <!-- EDIT MODE (Hidden by default) -->
+                <div id="profile-edit" style="display: none;">
+                    <form method="post" action="{{ url_for('main.save_profile') }}" id="profile-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="profile-edit-layout">
+                            <!-- Avatar Preview -->
+                            <div class="avatar-preview" id="avatar-preview" style="background-color: {{ current_user.avatar_color }}; background-image: url('{{ current_user.avatar or '' }}');">
+                                {% if not current_user.avatar %}{{ current_user.username[0]|upper }}{% endif %}
+                            </div>
+                            
+                            <!-- Inputs -->
+                            <div class="profile-inputs">
+                                <label class="settings-meta" for="username">Username</label>
+                                <input type="text" name="username" id="username" value="{{ current_user.username }}" required minlength="3" class="profile-input">
+                                
+                                <label class="settings-meta" for="avatar-upload" style="margin-top: 0.5rem;">Profile Picture</label>
+                                <input type="file" id="avatar-upload" accept="image/*" style="font-size: 0.85rem; color: var(--muted);">
+                                <input type="hidden" name="avatar_base64" id="avatar_base64">
+                            </div>
+                        </div>
+
+                        <label class="settings-meta" for="bio" style="margin-top: 1rem;">Bio / Context for AI Coach</label>
+                        <textarea name="bio" id="bio" rows="2" placeholder="e.g., CS Student, trying to stay consistent." class="profile-input" style="resize: vertical;">{{ current_user.bio or '' }}</textarea>
+                        
+                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                            <button type="submit" class="flexible-btn">Save Profile</button>
+                            <button type="button" class="flexible-btn" style="background: transparent; border: 1px solid var(--border); color: var(--text);" onclick="toggleProfileEdit()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </section>
 
                        <section class="card card--full">
