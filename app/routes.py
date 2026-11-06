@@ -442,7 +442,7 @@ def api_ask():
             model="openai/gpt-oss-20b",
             messages=messages,
             temperature=0.3,
-            max_tokens=150
+            max_tokens=400
         )
         
         ai_reply = response.choices[0].message.content

@@ -671,17 +671,15 @@ h2 { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spa
     100% { opacity: 0.5; }
 }
 
-/* Mobile Responsiveness for Chat */
+//* Mobile Responsiveness for Chat */
 @media (max-width: 600px) {
     .ai-chat-window {
         width: calc(100vw - 32px);
         right: 16px;
-        bottom: 84px;
-        height: 60vh;
-    }
-    .floating-actions {
-        right: 16px;
-        bottom: 16px;
+        bottom: 76px; /* Perfectly sits above the floating buttons */
+        height: 55vh; /* Limits height to 55% of the screen */
+        max-height: 450px;
+        top: auto !important;
     }
 }
 /* ---------- Fix AI Chat Position ---------- */
