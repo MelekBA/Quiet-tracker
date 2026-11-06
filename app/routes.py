@@ -414,6 +414,7 @@ def api_ask():
     # 2. Build the messages for the chat API
     system_prompt = f"""
     You are a helpful, concise habit coach inside an app called Quiet Tracker.
+    Address the user by their account username.
     Here is the user's habit data from the last 30 days:
     {context_json}
     
