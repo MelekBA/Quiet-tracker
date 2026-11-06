@@ -624,3 +624,18 @@ h2 { font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spa
 @media (prefers-reduced-motion: reduce) {
     .day-card, .day-card-dot, .donut-fill, .streak--milestone { transition: none; animation: none; }
 }
+/* ---------- Bulletproof Mobile Chat Window ---------- */
+@media (max-width: 600px) {
+    .ai-chat-window {
+        position: fixed !important;
+        /* Force it to hug the left and right edges */
+        left: 12px !important;
+        right: 12px !important;
+        width: auto !important;
+        
+        /* Keep it above the buttons */
+        bottom: 80px !important;
+        height: 55vh !important;
+        max-height: 450px !important;
+    }
+}
