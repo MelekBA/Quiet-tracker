@@ -406,16 +406,19 @@ def api_ask():
     daily_stats = models.get_completion_stats(uid, window_days=30)
 
     context = {
+        "username": current_user.username, 
         "habits": [{"name": h["name"], "type": h["period"] or "daily"} for h in habits],
         "stats_30d": daily_stats,
     }
     context_json = json.dumps(context, ensure_ascii=False)
 
     # 2. Build the messages for the chat API
+    username = current_user.username
     system_prompt = f"""
-    You are a helpful, concise habit coach inside an app called Quiet Tracker.
-    Address the user by their account username.
-    Here is the user's habit data from the last 30 days:
+     You are a helpful, concise habit coach inside an app called Quiet Tracker.
+    The user's name is {username}. You must address them by this name in your response.
+    
+    Here is their habit data from the last 30 days:
     {context_json}
     
     Answer the user directly in a friendly tone based on the data provided. Keep it under 3 sentences. 
