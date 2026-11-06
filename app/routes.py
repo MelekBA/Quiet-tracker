@@ -427,27 +427,52 @@ def api_ask():
     if not question:
         return jsonify({"error": "No question provided"}), 400
 
-        # 1. Gather User Context
+    # 1. Fetch ALL user data from the database
+    uid = current_user.id
+    habits = models.get_habits(uid)
+    
+    # Get daily stats (ignores flexible habits)
+    daily_stats = models.get_completion_stats(uid, window_days=30)
+    
+    # Get flexible habit counts (this week/this month)
+    flex_counts = models.get_period_counts(uid)
+
+    # 2. Format the data for the AI
+    daily_habits_data = []
+    flexible_habits_data = []
+    
+    for h in habits:
+        if h["period"]:
+            flexible_habits_data.append({
+                "name": h["name"],
+                "period": h["period"],
+                "count_this_period": flex_counts.get(h["id"], 0)
+            })
+        else:
+            daily_habits_data.append({"name": h["name"]})
+
+    # 3. Build the JSON context
     context = {
         "user_profile": {
             "name": current_user.username,
             "bio": current_user.bio or "No bio provided yet."
         },
-        "habits": [{"name": h["name"], "type": h["period"] or "daily"} for h in habits],
+        "daily_habits": daily_habits_data,
+        "flexible_habits": flexible_habits_data, # Now the AI sees these!
         "stats_30d": daily_stats,
     }
     context_json = json.dumps(context, ensure_ascii=False)
 
-    # 2. Build the messages
+        # 4. Build the messages
     system_prompt = f"""
     You are a helpful, concise habit coach inside an app called Quiet Tracker.
-    Address the user by their name.
     
     Here is the user's profile and habit data in JSON format:
     {context_json}
     
     Answer the user directly in a friendly tone based on the data provided. Keep it under 3 sentences. 
-    If the user asks about their bio or profile, refer to the JSON data above.
+    
+    Remember that 'flexible_habits' are counted by week or month, not daily.
     """
     
     messages = [
@@ -455,8 +480,7 @@ def api_ask():
         {"role": "user", "content": question}
     ]
 
-    # 3. Send to Groq (via OpenAI-compatible endpoint)
-    # Get your API key from environment variables
+    # 5. Send to Groq
     groq_api_key = os.environ.get("GROQ_API_KEY")
     if not groq_api_key:
         return jsonify({"error": "GROQ_API_KEY is not set on the server."}), 500
