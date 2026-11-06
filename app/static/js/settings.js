@@ -96,3 +96,54 @@ if (pushBtn) {
 } else {
     console.error("Could not find the push button on the page!");
 }
+// ---------- Profile Image Resizing ----------
+const avatarUpload = document.getElementById('avatar-upload');
+const avatarPreview = document.getElementById('avatar-preview');
+const avatarBase64Input = document.getElementById('avatar_base64');
+
+if (avatarUpload) {
+    avatarUpload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                // Create a canvas to resize the image
+                const canvas = document.createElement('canvas');
+                const MAX_SIZE = 150; // 150x150 is perfect for a tiny profile pic
+                let width = img.width;
+                let height = img.height;
+
+                // Calculate aspect ratio
+                if (width > height) {
+                    if (width > MAX_SIZE) {
+                        height *= MAX_SIZE / width;
+                        width = MAX_SIZE;
+                    }
+                } else {
+                    if (height > MAX_SIZE) {
+                        width *= MAX_SIZE / height;
+                        height = MAX_SIZE;
+                    }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convert to Base64 (JPEG at 80% quality to keep it tiny)
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                // Set the hidden input and update the preview
+                avatarBase64Input.value = dataUrl;
+                avatarPreview.style.backgroundImage = `url(${dataUrl})`;
+                avatarPreview.textContent = ''; // Remove the initial letter
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
