@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from pywebpush import webpush, WebPushException
 from flask import current_app, jsonify
 from openai import OpenAI
+from .db import get_db
 
 from flask import (
     Blueprint,
@@ -417,8 +418,6 @@ def save_profile():
     db.commit()
     
     return redirect(url_for("main.settings"))
-
-
 
 @main.route("/api/ask", methods=["POST"])
 @login_required

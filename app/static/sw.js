@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'quiet-tracker-v32';
+const CACHE_VERSION = 'quiet-tracker-v33';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 
